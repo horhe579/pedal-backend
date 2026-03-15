@@ -11,9 +11,13 @@ namespace Pedal.Controllers
     public class CarController : ControllerBase
     {
         private readonly CarService carService;
+        private readonly TokenService tokenService;
 
-        public CarController(CarService carsService) =>
+        public CarController(CarService carsService, TokenService tokenService)
+        {
             carService = carsService;
+            this.tokenService = tokenService;
+        }
 
         [HttpGet]
         public async Task<CarResponse[]> Get() =>
@@ -38,6 +42,25 @@ namespace Pedal.Controllers
             var createdCar = await carService.SignUpAsync(car);
 
             return Ok(createdCar.ToResponse());
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+        {
+            try
+            {
+                var car = await carService.LogInAsync(request.Email, request.Password);
+                var token = tokenService.GenerateToken(car.Id, car.Email);
+                return Ok(new LoginResponse { Token = token, CarId = car.Id, Email = car.Email });
+            }
+            catch (InvalidOperationException)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
+            catch (InvalidDataException)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
         }
 
         [HttpPut("{id:length(24)}")]
