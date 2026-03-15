@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pedal.Services;
 using Pedal.Entities;
 using Pedal.Models;
+using Pedal.Extensions;
 
 namespace Pedal.Controllers
 {
@@ -15,11 +16,11 @@ namespace Pedal.Controllers
             carService = carsService;
 
         [HttpGet]
-        public async Task<Car[]> Get() =>
-            await carService.GetCarsAsync();
+        public async Task<CarResponse[]> Get() =>
+            (await carService.GetCarsAsync()).ToResponse().ToArray();
 
         [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<Car>> Get(string id)
+        public async Task<ActionResult<CarResponse>> Get(string id)
         {
             var car = await carService.GetCarByIdAsync(id);
 
@@ -28,16 +29,15 @@ namespace Pedal.Controllers
                 return NotFound();
             }
 
-            return car;
+            return car.ToResponse();
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CarRequest car)
         {
+            var createdCar = await carService.SignUpAsync(car);
 
-            await carService.SignUpAsync(car);
-
-            return Ok(car);
+            return Ok(createdCar.ToResponse());
         }
 
         [HttpPut("{id:length(24)}")]
@@ -45,7 +45,7 @@ namespace Pedal.Controllers
         {
             var newCar = await carService.UpdateCarInfoAsync(updatedCar);
 
-            return Ok(updatedCar);
+            return Ok(newCar.ToResponse());
         }
 
         [HttpDelete("{id:length(24)}")]
