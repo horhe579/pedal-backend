@@ -2,6 +2,9 @@ using Pedal.Hubs;
 using Pedal.Models;
 using Pedal.Repositories;
 using Pedal.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +18,9 @@ builder.Services.AddSingleton<MessageRepository>();
 builder.Services.AddSingleton<CarService>();
 builder.Services.AddSingleton<SwipeService>();
 builder.Services.AddSingleton<MessageService>();
+builder.Services.AddSingleton<TokenService>();
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings"));
 
 // Add services to the container.
 
